@@ -100,3 +100,58 @@ Rayfield:Notify({
     Duration = 6
 })
 
+local FarmTab = Window:CreateTab("Auto Farm 🤖", 6031075938)
+getgenv().AutoFarmQuest = false
+
+FarmTab:CreateToggle({
+    Name = "Auto Quest + Farm (First Sea)",
+    CurrentValue = false,
+    Callback = function(Value)
+        getgenv().AutoFarmQuest = Value
+    end
+})
+-- AUTO QUEST LOOP
+task.spawn(function()
+    while task.wait(0.3) do
+        if getgenv().AutoFarmQuest then
+            pcall(function()
+                local player = game.Players.LocalPlayer
+                local Remotes = game:GetService("ReplicatedStorage"):WaitForChild("Remotes")
+
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+
+                local level = player.Data.Level.Value
+
+                local questData = {
+                    {1,9,"BanditQuest1","Bandit"},
+                    {10,14,"BanditQuest1","Monkey"},
+                    {15,29,"JungleQuest","Gorilla"},
+                    {30,39,"BuggyQuest1","Pirate"},
+                    {40,59,"BuggyQuest1","Brute"},
+                }
+
+                local quest
+                for _,v in pairs(questData) do
+                    if level >= v[1] and level <= v[2] then
+                        quest = v
+                    end
+                end
+                if not quest then return end
+
+                if not player.PlayerGui.Main.Quest.Visible then
+                    Remotes.CommF_:InvokeServer("StartQuest", quest[3], 1)
+                    task.wait(1)
+                end
+
+                for _,mob in pairs(workspace.Enemies:GetChildren()) do
+                    if mob.Name:find(quest[4]) and mob:FindFirstChild("HumanoidRootPart") then
+                        hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
+                        Remotes.CommF_:InvokeServer("Attack")
+                        break
+                    end
+                end
+            end)
+        end
+    end
+end)
