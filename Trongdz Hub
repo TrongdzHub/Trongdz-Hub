@@ -1,0 +1,102 @@
+--// Trongdz Hub
+--// Pink Theme UI
+--// Edited for Trongdz
+
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Trongdz Hub 💗",
+    Icon = 4483362458,
+    LoadingTitle = "Trongdz Hub",
+    LoadingSubtitle = "Pink Edition",
+    Theme = "Dark",
+
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "TrongdzHub",
+        FileName = "PinkConfig"
+    }
+})
+
+--// CUSTOM PINK THEME
+Rayfield:ChangeTheme({
+    TextColor = Color3.fromRGB(255, 200, 220),
+    Background = Color3.fromRGB(25, 20, 30),
+    Topbar = Color3.fromRGB(255, 105, 180),
+    Shadow = Color3.fromRGB(0, 0, 0),
+    NotificationBackground = Color3.fromRGB(30, 25, 40),
+    NotificationActionsBackground = Color3.fromRGB(255, 105, 180)
+})
+
+--// MAIN TAB
+local MainTab = Window:CreateTab("Main 💗", 6034287594)
+
+MainTab:CreateParagraph({
+    Title = "Trongdz Hub",
+    Content = "Welcome to Trongdz Hub – Pink UI Edition 🌸"
+})
+
+MainTab:CreateButton({
+    Name = "Notify Test",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Trongdz Hub",
+            Content = "UI màu hồng đã hoạt động 💗",
+            Duration = 5
+        })
+    end
+})
+
+--// FARM TAB
+local FarmTab = Window:CreateTab("Auto Farm 🤖", 6031075938)
+
+FarmTab:CreateToggle({
+    Name = "Auto Farm (Demo)",
+    CurrentValue = false,
+    Flag = "AutoFarm",
+    Callback = function(Value)
+        if Value then
+            print("Auto Farm ON")
+        else
+            print("Auto Farm OFF")
+        end
+    end
+})
+
+--// PLAYER TAB
+local PlayerTab = Window:CreateTab("Player 🎮", 6031280882)
+
+PlayerTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16, 200},
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end
+})
+
+PlayerTab:CreateSlider({
+    Name = "JumpPower",
+    Range = {50, 200},
+    Increment = 5,
+    CurrentValue = 50,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+    end
+})
+
+--// CREDIT TAB
+local CreditTab = Window:CreateTab("Credit ❤️", 6031763426)
+
+CreditTab:CreateParagraph({
+    Title = "Trongdz Hub",
+    Content = "Pink UI • Edited by Trongdz\nEnjoy the script 💕"
+})
+
+Rayfield:Notify({
+    Title = "Trongdz Hub Loaded",
+    Content = "Chúc bạn chơi game vui vẻ 💗",
+    Duration = 6
+})
+
