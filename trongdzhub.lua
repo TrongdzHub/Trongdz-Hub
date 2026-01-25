@@ -1,41 +1,75 @@
--- Trongdz Hub FIXED – Blox Fruits Full Auto Farm
--- Sea 1 → Sea 3 | Auto Quest | Auto Haki | Fly Above Mob | Fast Hit
+-- Trongdz Hub COMPLETE – Blox Fruits Auto Farm + Boss + Fast Attack + Bring Mob + Haki
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Trongdz Hub 💗",
     LoadingTitle = "Trongdz Hub",
-    LoadingSubtitle = "Blox Fruits Farm FIX",
+    LoadingSubtitle = "Blox Fruits Full Farm",
     Theme = "Dark"
 })
 
 local FarmTab = Window:CreateTab("Auto Farm 🤖", 6031075938)
 
-getgenv().AutoFarm = false
+getgenv().AutoFarmLevel = false
+getgenv().FastAttack = false
+getgenv().BringMob = false
+getgenv().AutoBoss = false
 
 FarmTab:CreateToggle({
     Name = "Auto Farm Level (All Sea)",
     CurrentValue = false,
-    Callback = function(v)
-        getgenv().AutoFarm = v
-    end
+    Callback = function(v) getgenv().AutoFarmLevel = v end
 })
 
--- SERVICES
+FarmTab:CreateToggle({
+    Name = "Fast Attack ⚡",
+    CurrentValue = false,
+    Callback = function(v) getgenv().FastAttack = v end
+})
+
+FarmTab:CreateToggle({
+    Name = "Bring Mob 🧲",
+    CurrentValue = false,
+    Callback = function(v) getgenv().BringMob = v end
+})
+
+FarmTab:CreateToggle({
+    Name = "Auto Boss 👑",
+    CurrentValue = false,
+    Callback = function(v) getgenv().AutoBoss = v end
+})
+
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
-local Remotes = ReplicatedStorage.Remotes
+local VirtualUser = game:GetService("VirtualUser")
 
--- ANTI AFK
+local player = Players.LocalPlayer
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+
 player.Idled:Connect(function()
-    game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
     task.wait(1)
-    game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 end)
 
--- AUTO HAKI
+-- Freeze & Lock functions
+local function FreezeMob(mob)
+    pcall(function()
+        mob.Humanoid.WalkSpeed = 0
+        mob.Humanoid.JumpPower = 0
+        mob.HumanoidRootPart.Anchored = true
+    end)
+end
+
+local function UnFreezeMob(mob)
+    pcall(function()
+        mob.HumanoidRootPart.Anchored = false
+    end)
+end
+
+-- Auto Haki
 task.spawn(function()
     while task.wait(1) do
         pcall(function()
@@ -46,7 +80,7 @@ task.spawn(function()
     end
 end)
 
--- QUEST DATA (RÚT GỌN – CHẠY ỔN)
+-- Quest data for all Seas
 local QuestData = {
     {1,700,"BanditQuest1","Bandit",1},
     {700,1500,"Area1Quest","Raider",2},
@@ -63,11 +97,11 @@ local function GetSea()
 end
 
 local function GetQuest()
+    local sea = GetSea() 
     local lv = player.Data.Level.Value
-    local sea = GetSea()
-    for _,q in pairs(QuestData) do
-        if q[5] == sea and lv >= q[1] and lv <= q[2] then
-            return q
+    for _,v in pairs(QuestData) do
+        if v[5] == sea and lv >= v[1] and lv <= v[2] then
+            return v
         end
     end
 end
@@ -86,41 +120,89 @@ local function EquipWeapon()
     end
 end
 
--- FARM LOOP (FIX ĐÁNH THẬT)
+-- Fast Attack
 task.spawn(function()
-    while task.wait(0.25) do
-        if getgenv().AutoFarm then
+    while task.wait(0.1) do
+        if getgenv().FastAttack then
+            pcall(function()
+                Remotes.CommF_:InvokeServer("Attack")
+            end)
+        end
+    end
+end)
+
+-- Bring Mob
+task.spawn(function()
+    while task.wait(0.4) do
+        if getgenv().BringMob then
+            pcall(function()
+                local char = player.Character
+                if not char then return end
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+
+                for _,mob in pairs(workspace.Enemies:GetChildren()) do
+                    if mob:FindFirstChild("HumanoidRootPart")
+                    and mob:FindFirstChild("Humanoid")
+                    and mob.Humanoid.Health > 0 then
+                        mob.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(math.random(-4,4),0,math.random(-4,4))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- Auto Farm + Boss
+task.spawn(function()
+    while task.wait(0.3) do
+        if getgenv().AutoFarmLevel or getgenv().AutoBoss then
             pcall(function()
                 local char = player.Character or player.CharacterAdded:Wait()
                 local hrp = char:WaitForChild("HumanoidRootPart")
 
                 EquipWeapon()
 
-                local quest = GetQuest()
-                if not quest then return end
-
-                if not player.PlayerGui.Main.Quest.Visible then
-                    Remotes.CommF_:InvokeServer("StartQuest", quest[3], 1)
-                    task.wait(1)
+                if getgenv().AutoBoss then
+                    for _,boss in pairs(workspace.Enemies:GetChildren()) do
+                        if boss:FindFirstChild("Humanoid")
+                        and boss.Humanoid.Health > 0
+                        and (boss.Name:find("Boss") or boss.Name:find("Elite") or boss.Name:find("Dough")) then
+                            
+                            hrp.CFrame = boss.HumanoidRootPart.CFrame * CFrame.new(0,6,0)
+                            FreezeMob(boss)
+                            for i=1,6 do
+                                Remotes.CommF_:InvokeServer("Attack")
+                                task.wait(0.15)
+                            end
+                            UnFreezeMob(boss)
+                            return
+                        end
+                    end
                 end
 
-                for _,mob in pairs(workspace.Enemies:GetChildren()) do
-                    if mob.Name:find(quest[4])
-                    and mob:FindFirstChild("HumanoidRootPart")
-                    and mob.Humanoid.Health > 0 then
+                if getgenv().AutoFarmLevel then
+                    local quest = GetQuest()
+                    if not quest then return end
 
-                        -- BAY TRÊN ĐẦU QUÁI
-                        hrp.CFrame = CFrame.new(
-                            mob.HumanoidRootPart.Position + Vector3.new(0,6,0),
-                            mob.HumanoidRootPart.Position
-                        )
+                    if not player.PlayerGui.Main.Quest.Visible then
+                        Remotes.CommF_:InvokeServer("StartQuest", quest[3], 1)
+                        task.wait(1)
+                    end
 
-                        -- ĐÁNH CHẮC
-                        for i=1,3 do
-                            Remotes.CommF_:InvokeServer("Attack")
-                            task.wait(0.15)
+                    for _,mob in pairs(workspace.Enemies:GetChildren()) do
+                        if mob.Name:find(quest[4])
+                        and mob:FindFirstChild("HumanoidRootPart")
+                        and mob.Humanoid.Health > 0 then
+                            hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,6,0)
+                            FreezeMob(mob)
+                            for i=1,5 do
+                                Remotes.CommF_:InvokeServer("Attack")
+                                task.wait(0.15)
+                            end
+                            UnFreezeMob(mob)
+                            break
                         end
-                        break
                     end
                 end
             end)
