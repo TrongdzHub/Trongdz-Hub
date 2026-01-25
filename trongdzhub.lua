@@ -113,19 +113,57 @@ end)
 
 -- BRING MOB
 task.spawn(function()
-    while task.wait(0.4) do
-        if getgenv().BringMob then
+    while task.wait(0.25) do
+        if getgenv().AutoFarmLevel then
             pcall(function()
-                local char = player.Character
-                if not char then return end
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if not hrp then return end
+                local player = game.Players.LocalPlayer
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hum = char:WaitForChild("Humanoid")
+                local hrp = char:WaitForChild("HumanoidRootPart")
+                local Remotes = game:GetService("ReplicatedStorage").Remotes
 
+                -- AUTO EQUIP (BẮT BUỘC)
+                if not char:FindFirstChildOfClass("Tool") then
+                    for _,tool in pairs(player.Backpack:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            hum:EquipTool(tool)
+                            task.wait(0.1)
+                            break
+                        end
+                    end
+                end
+
+                local quest = GetQuest()
+                if not quest then return end
+
+                -- NHẬN QUEST
+                if not player.PlayerGui.Main.Quest.Visible then
+                    Remotes.CommF_:InvokeServer("StartQuest", quest[3], 1)
+                    task.wait(1)
+                end
+
+                -- TÌM QUÁI
                 for _,mob in pairs(workspace.Enemies:GetChildren()) do
-                    if mob:FindFirstChild("HumanoidRootPart")
+                    if mob.Name:find(quest[4])
                     and mob:FindFirstChild("Humanoid")
+                    and mob:FindFirstChild("HumanoidRootPart")
                     and mob.Humanoid.Health > 0 then
-                        mob.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(math.random(-4,4),0,math.random(-4,4))
+
+                        -- ÁP SÁT RẤT GẦN
+                        hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,0,2)
+
+                        -- XOAY MẶT VỀ QUÁI
+                        hrp.CFrame = CFrame.new(
+                            hrp.Position,
+                            mob.HumanoidRootPart.Position
+                        )
+
+                        -- ĐÁNH LIÊN TỤC
+                        Remotes.CommF_:InvokeServer("Attack")
+                        Remotes.CommF_:InvokeServer("Attack")
+                        Remotes.CommF_:InvokeServer("Attack")
+
+                        break
                     end
                 end
             end)
